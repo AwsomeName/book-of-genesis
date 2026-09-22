@@ -93,7 +93,9 @@ python3 -m genesis provider-models
 本机使用 Python + SQLite，推理使用在线模型 API，不部署本地模型。
 **婴儿期优先解决资金与资源钱包**：创造者每天提供 AI 额度，在预算和授权范围内
 研究额外额度与免费主机申请。区分资金、模型额度和主机资源，不能混记余额。
-账户与预算协议见[资源钱包](docs/resource-wallet.md)，暂不预设支付渠道。
+账户与预算协议见[资源钱包](docs/resource-wallet.md)。
+[真实资金钱包](docs/funds-wallet.md)必须验证收款、付款、对账及恢复，
+临时 API Key 和本地余额记录不能替代此项交付；支付渠道待确定。
 详细阶段划分和验收标准见[婴儿期计划](docs/incubation.md)。
 
 已加入本地一致性状态快照，可先演练恢复：
