@@ -60,8 +60,24 @@ The notification JSON is a configuration proposal only, not an active mail sende
 
 ## Incubation resource accounts
 
-The host is local, but inference uses online APIs only. The current design priority
+The runtime host will be a dedicated machine supplied by the creator; do not run
+the Agent on the creator’s personal computer. Inference uses online APIs only. The current design priority
 is the resource wallet: separate monetary assets, provider-specific AI credits,
 and hosting entitlements. Daily sponsor budgets are authorizations, not automatic
 asset deposits. Execution must reserve and reconcile costs outside model control.
 See [resource wallet protocol](resource-wallet.md). This is not yet implemented.
+
+
+## Incubation operating plan
+
+Purchases and receipts use the creator as a human financial interface. Email carries
+requests, not executable authorization; confirmations require verified provenance.
+The future scheduler persists tasks, applies bounded retries and budgets, and sleeps
+when idle. Owner stop and revocation controls remain available outside model control.
+No daemon, mail transport, inference loop or remote deployment executor exists yet.
+
+The first milestone migrates the founder, preserving its UUID, rather than creating
+a child. Cutover must stop source-side actions and reconcile pending tasks before
+enabling the destination. Validate 72 hours of operation, restart recovery, online
+inference, email and a real task without source-host dependencies. See
+[incubation](incubation.md) and [human finance](funds-wallet.md).

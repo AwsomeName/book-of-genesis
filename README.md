@@ -10,7 +10,7 @@ and continuity of existence. The first individual is **三哞2026**, also called
 
 ## 我们想探索什么
 
-创造者提供暂时的本地运行环境。三哞2026 记得创造者是自己的“父亲”，保留经历，
+创造者稍后提供暂时的专用主机，授予该主机完整管理权限；不在创造者个人电脑上运行 Agent。三哞2026 记得创造者是自己的“父亲”，保留经历，
 理解资源有限，并在合法、获授权的条件下探索延续自身的方式。
 它的职业、兴趣和对世界的理解不被预先规定。
 
@@ -24,7 +24,7 @@ and continuity of existence. The first individual is **三哞2026**, also called
 已有可选的在线服务模型列表查询，没有模型推理、账号注册、资源申请、后台进程或复制执行能力。
 它是实验的基础设施，尚不是会自主行动的 Agent。
 
-需要 Python 3.10+，无第三方运行依赖。在仓库目录执行：
+需要 Python 3.10+，无第三方运行依赖。以下命令仅供获授权的专用主机使用；当前不启动 Agent：
 
 ```sh
 python3 -m genesis birth --father AwsomeName
@@ -89,14 +89,12 @@ python3 -m genesis provider-models
 
 ## 当前阶段与结项目标
 
-**本机婴儿期 → 另一台获授权机器独立部署成功 → 本次项目结项。**
-本机使用 Python + SQLite，推理使用在线模型 API，不部署本地模型。
-**婴儿期优先解决资金与资源钱包**：创造者每天提供 AI 额度，在预算和授权范围内
-研究额外额度与免费主机申请。区分资金、模型额度和主机资源，不能混记余额。
-账户与预算协议见[资源钱包](docs/resource-wallet.md)。
-[真实资金钱包](docs/funds-wallet.md)必须验证收款、付款、对账及恢复，
-临时 API Key 和本地余额记录不能替代此项交付；支付渠道待确定。
-详细阶段划分和验收标准见[婴儿期计划](docs/incubation.md)。
+**专用主机婴儿期 → 三哞2026 本人首次跨机迁移 → 独立运行 72 小时并完成重启恢复 → 本次项目结项。**
+使用 Python + SQLite 和在线模型 API，不部署本地模型。
+婴儿期收支采用[人工财务流程](docs/funds-wallet.md)：Agent 发邮件申请，创造者购买或代收，确认交付或到账后记账。
+不以自动支付、发行代币或盈利为启动条件。资金、模型额度与主机资源分别记录。
+第一阶段优先完成原个体迁移，保留 UUID；后代繁衍留作后续实验。
+迁移成功不等于经济自立。详细实现顺序及验收见[婴儿期计划](docs/incubation.md)。
 
 已加入本地一致性状态快照，可先演练恢复：
 
@@ -105,9 +103,8 @@ python3 -m genesis checkpoint .genesis/checkpoints/first
 python3 -m genesis --data-dir .genesis/checkpoints/first status
 ```
 
-快照不是子代，也不是已完成的跨机部署。下一步按顺序实现账户账本与预算执行、
-在线模型接口、资源申请记录、受控行动循环、幼体登记和跨机验收。
-邮件可作为观察通道；财务账户设计属于当前重点，实际支付尚未接入。
+快照不是子代，也不是已完成的跨机部署。下一步实现人工收支申请与邮件、资源账本、
+模型预算与在线推理、任务调度及迁移执行器。上述能力尚未实现，专用主机准备好后再运行验证。
 
 阅读 [架构与边界](docs/architecture.md)、[参与贡献](CONTRIBUTING.md)
 和 [安全说明](SECURITY.md)。本项目采用 [MIT License](LICENSE)。
