@@ -1,0 +1,13 @@
+{
+  "base_url": "https://api.example.com",
+  "model": null,
+  "enabled": false,
+  "service_eligibility_confirmed": false,
+  "daily_allowance_cny": "80.00",
+  "allowance_source": "owner_reported_approximate_not_verified_balance",
+  "billing_timezone": "Asia/Shanghai",
+  "daily_reset_verified": false,
+  "expires_at": "2026-01-01T00:00:00+00:00",
+  "expiry_source": "replace_with_actual_expiry_before_enabling",
+  "spending_enforcement": "not_implemented"
+}

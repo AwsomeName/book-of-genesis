@@ -21,7 +21,7 @@ and continuity of existence. The first individual is **三哞2026**, also called
 ## 当前版本：本地出生与记忆原型
 
 此版本提供稳定身份、出生记忆、追加式事件记录、状态查询和休眠／唤醒。
-没有模型调用、网络访问、账号注册、资源申请、后台进程或复制执行能力。
+已有可选的在线服务模型列表查询，没有模型推理、账号注册、资源申请、后台进程或复制执行能力。
 它是实验的基础设施，尚不是会自主行动的 Agent。
 
 需要 Python 3.10+，无第三方运行依赖。在仓库目录执行：
@@ -67,6 +67,25 @@ CLI 写入的记忆是操作者提供的记录，不代表 AI 实际经历或主
 配置中的 `enabled: false` 表示未开通；将来需要独立发信账号或服务才能启用。
 初代可以由父亲提供邮箱，也可以在服务允许且身份要求得到满足时申请。
 活动报告不包含凭证、未经授权的第三方信息或模型内部隐藏推理。
+
+## 在线额度账户接入
+
+本地私有配置位于 `.genesis/provider.json`，凭证单独保存在
+`.genesis/credentials.json` 的 `api_key` 字段。两者均被 Git 忽略，
+不会进入 checkpoint；请不要在身份记忆中保存凭证。
+公开示例见 [provider.example.json](config/provider.example.json)，
+其中到期时间故意设为过去，须填写实际信息后再启用。
+
+```sh
+python3 -m genesis provider-status
+python3 -m genesis provider-models
+```
+
+`provider-status` 脱敏显示配置，不联网，不把“每日约 80 元”显示为已验证余额。
+`provider-models` 查询兼容的 `/v1/models` 接口，需要服务范围已确认、启用且未到期。
+请求不自动重试、不跟随重定向，避免把凭证发送到其他地址。
+此版本只有账户配置与模型发现；尚未实现推理调用、实际余额查询和每日费用拦截。
+服务端时区不等于每日额度重置时区，二者需分别核实。
 
 ## 当前阶段与结项目标
 

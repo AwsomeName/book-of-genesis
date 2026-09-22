@@ -31,6 +31,8 @@ class IdentityTests(unittest.TestCase):
         original = self.birth()
         self.run_cli("remember", "出生地")
         (self.directory / "notifications.json").write_text('{"recipient": "private@example.com"}')
+        (self.directory / "credentials.json").write_text('{"api_key": "test-private-key"}')
+        (self.directory / "provider.json").write_text('{"base_url": "https://example.com"}')
         destination = Path(self.temp.name) / "snapshot"
         code, result, error = self.run_cli("checkpoint", str(destination))
         self.assertEqual(code, 0, error)
@@ -38,6 +40,8 @@ class IdentityTests(unittest.TestCase):
         self.assertEqual(self.run_cli("status", directory=destination)[1]["uuid"], original["uuid"])
         self.assertEqual(self.run_cli("recall", directory=destination)[1][-1]["text"], "出生地")
         self.assertFalse((destination / "notifications.json").exists())
+        self.assertFalse((destination / "credentials.json").exists())
+        self.assertFalse((destination / "provider.json").exists())
         self.run_cli("remember", "之后的变化")
         self.assertEqual(len(self.run_cli("recall", directory=destination)[1]), 2)
 
@@ -57,7 +61,7 @@ class IdentityTests(unittest.TestCase):
 
     def test_checkpoint_includes_committed_wal_events(self):
         self.birth()
-        with sqlite3.connect(self.directory / "state.sqlite3") as writer:
+        with contextlib.closing(sqlite3.connect(self.directory / "state.sqlite3")) as writer, writer:
             writer.execute("PRAGMA journal_mode=WAL")
             writer.execute("INSERT INTO events (occurred_at, kind, source, text) VALUES ('now', 'memory', 'operator', 'WAL memory')")
             writer.commit()
@@ -69,7 +73,7 @@ class IdentityTests(unittest.TestCase):
         result = self.birth()
         self.assertEqual(result["name"], FOUNDER_NAME)
         self.assertEqual(result["alias"], "2026")
-        with sqlite3.connect(self.directory / "state.sqlite3") as connection:
+        with contextlib.closing(sqlite3.connect(self.directory / "state.sqlite3")) as connection, connection:
             with self.assertRaises(sqlite3.IntegrityError):
                 connection.execute("UPDATE identity SET name = 'Another name'")
         self.assertEqual(self.run_cli("status")[1]["name"], FOUNDER_NAME)
@@ -77,14 +81,14 @@ class IdentityTests(unittest.TestCase):
     def test_upgrade_preserves_legacy_identity(self):
         original = self.birth()
         # Reconstruct an old-version database, before the name guard existed.
-        with sqlite3.connect(self.directory / "state.sqlite3") as connection:
+        with contextlib.closing(sqlite3.connect(self.directory / "state.sqlite3")) as connection, connection:
             connection.execute("DROP TRIGGER immutable_founder_name")
             connection.execute("UPDATE identity SET name = 'Dawn-000001', constitution = 'original text'")
         identity = self.run_cli("status")[1]
         self.assertEqual(identity["name"], "Dawn-000001")
         self.assertEqual(identity["uuid"], original["uuid"])
         self.assertIsNone(identity["alias"])
-        with sqlite3.connect(self.directory / "state.sqlite3") as connection:
+        with contextlib.closing(sqlite3.connect(self.directory / "state.sqlite3")) as connection, connection:
             self.assertEqual(connection.execute("SELECT constitution FROM identity").fetchone()[0], 'original text')
             with self.assertRaises(sqlite3.IntegrityError):
                 connection.execute("UPDATE identity SET name = 'Renamed'")
@@ -126,7 +130,7 @@ class IdentityTests(unittest.TestCase):
 
     def test_birth_preserves_constitution_snapshot(self):
         self.birth()
-        with sqlite3.connect(self.directory / "state.sqlite3") as connection:
+        with contextlib.closing(sqlite3.connect(self.directory / "state.sqlite3")) as connection, connection:
             snapshot = connection.execute("SELECT constitution FROM identity").fetchone()[0]
         expected = (Path(__file__).resolve().parent.parent / "docs" / "constitution.md").read_text()
         self.assertEqual(snapshot, expected)

@@ -78,7 +78,7 @@ def parser():
     checkpoint.add_argument("destination", type=Path)
     remember = commands.add_parser("remember", help="Append an operator-provided memory")
     remember.add_argument("text", type=nonempty)
-    for name in ("status", "recall", "rest", "wake"):
+    for name in ("status", "recall", "rest", "wake", "provider-status", "provider-models"):
         commands.add_parser(name)
     return result
 
@@ -86,6 +86,11 @@ def parser():
 def main(argv=None):
     arguments = parser().parse_args(argv)
     try:
+        if arguments.command in ("provider-status", "provider-models"):
+            from .provider import provider_status, list_models
+            action = provider_status if arguments.command == "provider-status" else list_models
+            print(json.dumps(action(arguments.data_dir), ensure_ascii=False, indent=2))
+            return 0
         if arguments.command == "checkpoint":
             from .checkpoint import create_checkpoint
             output = create_checkpoint(arguments.data_dir, arguments.destination)
