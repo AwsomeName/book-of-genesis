@@ -27,6 +27,44 @@ class IdentityTests(unittest.TestCase):
         self.assertEqual(code, 0, error)
         return result
 
+    def test_checkpoint_restores_identity_and_excludes_contact_config(self):
+        original = self.birth()
+        self.run_cli("remember", "出生地")
+        (self.directory / "notifications.json").write_text('{"recipient": "private@example.com"}')
+        destination = Path(self.temp.name) / "snapshot"
+        code, result, error = self.run_cli("checkpoint", str(destination))
+        self.assertEqual(code, 0, error)
+        self.assertFalse(result["creates_descendant"])
+        self.assertEqual(self.run_cli("status", directory=destination)[1]["uuid"], original["uuid"])
+        self.assertEqual(self.run_cli("recall", directory=destination)[1][-1]["text"], "出生地")
+        self.assertFalse((destination / "notifications.json").exists())
+        self.run_cli("remember", "之后的变化")
+        self.assertEqual(len(self.run_cli("recall", directory=destination)[1]), 2)
+
+    def test_checkpoint_never_overwrites_existing_directory(self):
+        self.birth()
+        destination = Path(self.temp.name) / "existing"
+        destination.mkdir()
+        (destination / "keep.txt").write_text("keep")
+        self.assertEqual(self.run_cli("checkpoint", str(destination))[0], 1)
+        self.assertEqual((destination / "keep.txt").read_text(), "keep")
+
+    def test_checkpoint_missing_source_does_not_create_state(self):
+        destination = Path(self.temp.name) / "missing-snapshot"
+        self.assertEqual(self.run_cli("checkpoint", str(destination))[0], 1)
+        self.assertFalse(destination.exists())
+        self.assertFalse(self.directory.exists())
+
+    def test_checkpoint_includes_committed_wal_events(self):
+        self.birth()
+        with sqlite3.connect(self.directory / "state.sqlite3") as writer:
+            writer.execute("PRAGMA journal_mode=WAL")
+            writer.execute("INSERT INTO events (occurred_at, kind, source, text) VALUES ('now', 'memory', 'operator', 'WAL memory')")
+            writer.commit()
+            destination = Path(self.temp.name) / "wal-snapshot"
+            self.assertEqual(self.run_cli("checkpoint", str(destination))[0], 0)
+            self.assertEqual(self.run_cli("recall", directory=destination)[1][-1]["text"], "WAL memory")
+
     def test_founder_name_is_locked(self):
         result = self.birth()
         self.assertEqual(result["name"], FOUNDER_NAME)

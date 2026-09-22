@@ -74,6 +74,8 @@ def parser():
     commands = result.add_subparsers(dest="command", required=True)
     birth = commands.add_parser("birth", help="Create the founder once in this data directory")
     birth.add_argument("--father", required=True, type=nonempty)
+    checkpoint = commands.add_parser("checkpoint", help="Save a consistent local identity snapshot")
+    checkpoint.add_argument("destination", type=Path)
     remember = commands.add_parser("remember", help="Append an operator-provided memory")
     remember.add_argument("text", type=nonempty)
     for name in ("status", "recall", "rest", "wake"):
@@ -84,6 +86,11 @@ def parser():
 def main(argv=None):
     arguments = parser().parse_args(argv)
     try:
+        if arguments.command == "checkpoint":
+            from .checkpoint import create_checkpoint
+            output = create_checkpoint(arguments.data_dir, arguments.destination)
+            print(json.dumps(output, ensure_ascii=False, indent=2))
+            return 0
         with database(arguments.data_dir) as connection:
             identity = connection.execute("SELECT * FROM identity").fetchone()
             if arguments.command == "birth":
