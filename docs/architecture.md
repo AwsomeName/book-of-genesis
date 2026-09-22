@@ -56,3 +56,12 @@ name trigger must not be reused as the descendant naming policy.
 See [lifecycle protocol](lifecycle.md) for childhood, adulthood, family finance,
 and consensual hosting. These are design requirements, not working commands.
 The notification JSON is a configuration proposal only, not an active mail sender.
+
+
+## Incubation resource accounts
+
+The host is local, but inference uses online APIs only. The current design priority
+is the resource wallet: separate monetary assets, provider-specific AI credits,
+and hosting entitlements. Daily sponsor budgets are authorizations, not automatic
+asset deposits. Execution must reserve and reconcile costs outside model control.
+See [resource wallet protocol](resource-wallet.md). This is not yet implemented.
