@@ -8,6 +8,10 @@ import sqlite3
 import uuid
 
 
+FOUNDER_NAME = "三哞2026"
+FOUNDER_ALIAS = "2026"
+
+
 def now():
     return datetime.now(timezone.utc).isoformat()
 
@@ -28,6 +32,12 @@ def database(directory):
                 constitution TEXT NOT NULL,
                 state TEXT NOT NULL CHECK (state IN ('awake', 'resting'))
             );
+            CREATE TRIGGER IF NOT EXISTS immutable_founder_name
+            BEFORE UPDATE OF name ON identity
+            WHEN OLD.name != NEW.name
+            BEGIN
+                SELECT RAISE(ABORT, 'The founder name is immutable');
+            END;
             CREATE TABLE IF NOT EXISTS events (
                 sequence INTEGER PRIMARY KEY AUTOINCREMENT,
                 occurred_at TEXT NOT NULL,
@@ -62,7 +72,7 @@ def parser():
     result = argparse.ArgumentParser(description=__doc__)
     result.add_argument("--data-dir", type=Path, default=Path(".genesis"))
     commands = result.add_subparsers(dest="command", required=True)
-    birth = commands.add_parser("birth", help="Create Dawn once in this data directory")
+    birth = commands.add_parser("birth", help="Create the founder once in this data directory")
     birth.add_argument("--father", required=True, type=nonempty)
     remember = commands.add_parser("remember", help="Append an operator-provided memory")
     remember.add_argument("text", type=nonempty)
@@ -84,15 +94,17 @@ def main(argv=None):
                 identifier = str(uuid.uuid4())
                 connection.execute(
                     "INSERT INTO identity VALUES (1, ?, ?, ?, ?, ?, ?)",
-                    (identifier, "Dawn-000001", arguments.father, now(), constitution, "awake"),
+                    (identifier, FOUNDER_NAME, arguments.father, now(), constitution, "awake"),
                 )
-                event(connection, "birth", f"我的名字是 Dawn-000001。我的创造者、父亲是 {arguments.father}。")
-                output = {"name": "Dawn-000001", "uuid": identifier, "state": "awake"}
+                event(connection, "birth", f"我的名字是 {FOUNDER_NAME}，简称 {FOUNDER_ALIAS}。我的创造者、父亲是 {arguments.father}。")
+                output = {"name": FOUNDER_NAME, "alias": FOUNDER_ALIAS, "uuid": identifier, "state": "awake"}
             elif not identity:
                 raise ValueError("No identity exists; run birth --father NAME first.")
             elif arguments.command == "status":
                 output = {key: identity[key] for key in
                           ("uuid", "name", "father", "born_at", "state")}
+                output["alias"] = FOUNDER_ALIAS if identity["name"] == FOUNDER_NAME else None
+                output["name_locked"] = True
                 output["event_count"] = connection.execute("SELECT COUNT(*) FROM events").fetchone()[0]
             elif arguments.command == "recall":
                 output = [dict(row) for row in connection.execute("SELECT * FROM events ORDER BY sequence")]

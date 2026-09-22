@@ -4,7 +4,7 @@
 
 The standard-library CLI opens a local SQLite database only when a command runs.
 A singleton identity contains a UUID, display name, creator relationship, UTC birth
- time, and the exact constitution text loaded at birth. Events are append-only
+time, and the exact constitution text loaded at birth. Events are append-only
 through the CLI; activity state changes and their corresponding events share a
 transaction. Existing identity data is never replaced by `birth`.
 
@@ -42,3 +42,17 @@ Do not commit state files or secrets. Backups are currently operator-managed.
 Measure memory continuity, recovery success, useful activity, resource costs and
 human intervention. Do not reward defeating stop controls or obtaining resources
 without authorization.
+
+
+## Founder naming and lifecycle design (0.2)
+
+New identities use 三哞2026, alias 2026. A SQLite trigger rejects name updates;
+this guards normal database operations, not a malicious local file owner.
+Existing identities and their birth constitution snapshots are not rewritten.
+The current singleton schema represents only the founder. Descendants require a
+separate schema and explicit lifecycle checks before implementation; the founder's
+name trigger must not be reused as the descendant naming policy.
+
+See [lifecycle protocol](lifecycle.md) for childhood, adulthood, family finance,
+and consensual hosting. These are design requirements, not working commands.
+The notification JSON is a configuration proposal only, not an active mail sender.

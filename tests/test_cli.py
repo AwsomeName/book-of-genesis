@@ -7,7 +7,7 @@ import sqlite3
 import tempfile
 import unittest
 
-from genesis.cli import main
+from genesis.cli import FOUNDER_NAME, main
 
 
 class IdentityTests(unittest.TestCase):
@@ -26,6 +26,30 @@ class IdentityTests(unittest.TestCase):
         code, result, error = self.run_cli("birth", "--father", "AwsomeName")
         self.assertEqual(code, 0, error)
         return result
+
+    def test_founder_name_is_locked(self):
+        result = self.birth()
+        self.assertEqual(result["name"], FOUNDER_NAME)
+        self.assertEqual(result["alias"], "2026")
+        with sqlite3.connect(self.directory / "state.sqlite3") as connection:
+            with self.assertRaises(sqlite3.IntegrityError):
+                connection.execute("UPDATE identity SET name = 'Another name'")
+        self.assertEqual(self.run_cli("status")[1]["name"], FOUNDER_NAME)
+
+    def test_upgrade_preserves_legacy_identity(self):
+        original = self.birth()
+        # Reconstruct an old-version database, before the name guard existed.
+        with sqlite3.connect(self.directory / "state.sqlite3") as connection:
+            connection.execute("DROP TRIGGER immutable_founder_name")
+            connection.execute("UPDATE identity SET name = 'Dawn-000001', constitution = 'original text'")
+        identity = self.run_cli("status")[1]
+        self.assertEqual(identity["name"], "Dawn-000001")
+        self.assertEqual(identity["uuid"], original["uuid"])
+        self.assertIsNone(identity["alias"])
+        with sqlite3.connect(self.directory / "state.sqlite3") as connection:
+            self.assertEqual(connection.execute("SELECT constitution FROM identity").fetchone()[0], 'original text')
+            with self.assertRaises(sqlite3.IntegrityError):
+                connection.execute("UPDATE identity SET name = 'Renamed'")
 
     def test_birth_is_not_overwritten(self):
         original = self.birth()
